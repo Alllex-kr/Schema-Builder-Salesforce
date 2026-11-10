@@ -16,7 +16,9 @@ Assign the `Schema_Browser_User` permission set to users who should open the app
 ## Current scope
 
 - Search accessible objects by label or API name.
+- Filter the object list to standard objects, custom objects, or both.
 - Add readable objects to a draggable schema canvas.
+- Automatically arrange cards or clear the current canvas view.
 - Show readable fields with API name, data type, required marker, and relationship target.
 - Draw a connector when both ends of a readable relationship are on the canvas.
 - Inspect field details in a side panel and remove cards from the current view.

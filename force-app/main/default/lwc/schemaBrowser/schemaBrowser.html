@@ -8,7 +8,28 @@
                 onchange={handleSearch}
                 class="search-input">
             </lightning-input>
-            <div class="toolbar-note">{canvasObjectCount} objects on canvas</div>
+            <lightning-combobox
+                label="Object type"
+                value={objectTypeFilter}
+                options={objectTypeOptions}
+                onchange={handleObjectTypeFilter}
+                class="type-filter">
+            </lightning-combobox>
+            <div class="canvas-actions">
+                <span class="toolbar-note">{canvasObjectCount} objects on canvas</span>
+                <lightning-button
+                    label="Auto arrange"
+                    icon-name="utility:layout"
+                    onclick={handleAutoArrange}
+                    disabled={disableCanvasActions}>
+                </lightning-button>
+                <lightning-button
+                    label="Clear canvas"
+                    icon-name="utility:clear"
+                    onclick={handleClearCanvas}
+                    disabled={disableCanvasActions}>
+                </lightning-button>
+            </div>
         </div>
 
         <template if:true={errorMessage}>

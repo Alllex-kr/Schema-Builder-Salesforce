@@ -13,6 +13,17 @@
     width: min(24rem, 50%);
 }
 
+.type-filter {
+    width: 12rem;
+}
+
+.canvas-actions {
+    display: flex;
+    align-items: end;
+    gap: 0.5rem;
+    margin-left: auto;
+}
+
 .toolbar-note {
     color: #706e6b;
     font-size: 0.875rem;
@@ -342,6 +353,10 @@
 }
 
 @media (max-width: 760px) {
+    .toolbar {
+        flex-wrap: wrap;
+    }
+
     .workspace {
         grid-template-columns: minmax(0, 1fr);
         height: 78vh;
@@ -358,6 +373,15 @@
     }
 
     .search-input {
-        width: 70%;
+        width: min(100%, 23rem);
+    }
+
+    .type-filter {
+        width: min(100%, 15rem);
+    }
+
+    .canvas-actions {
+        flex-wrap: wrap;
+        margin-left: 0;
     }
 }

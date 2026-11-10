@@ -16,14 +16,16 @@ Assign the `Schema_Browser_User` permission set to users who should open the app
 ## Current scope
 
 - Search accessible objects by label or API name.
-- Select an object and inspect its readable fields.
-- Show field type, requiredness, and readable relationship targets.
+- Add readable objects to a draggable schema canvas.
+- Show readable fields with API name, data type, required marker, and relationship target.
+- Draw a connector when both ends of a readable relationship are on the canvas.
+- Inspect field details in a side panel and remove cards from the current view.
 - No metadata create, edit, or delete operations.
 
 ## Security model
 
-`SchemaBrowserController` is `with sharing`. It filters objects with `DescribeSObjectResult.isAccessible()` and fields with `DescribeFieldResult.isAccessible()`, and rechecks the requested object in the detail method. The controller exposes no metadata write API. The UI is not a security boundary; visibility is filtered in Apex for the current user.
+`SchemaBrowserController` is `with sharing`. It filters objects with `DescribeSObjectResult.isAccessible()` and fields with `DescribeFieldResult.isAccessible()`, and rechecks the requested object in the detail method. Relationship targets are returned only when readable to the current user. The controller exposes no metadata write API. The UI is not a security boundary; visibility is filtered in Apex for the current user.
 
 ## Important validation
 
-Validate in a sandbox using a standard user without `Customize Application`. Confirm which standard, custom, and managed objects are returned by describe in the target org. Fields load only when an object is selected, avoiding a large all-schema response.
+Validate in a sandbox using a standard user without `Customize Application`. Confirm which standard, custom, and managed objects are returned by describe in the target org. Object fields load only when a card is added, avoiding an all-schema response.

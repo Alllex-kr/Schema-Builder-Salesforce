@@ -1,56 +1,180 @@
 <template>
     <lightning-card title="Schema Browser" icon-name="standard:connected_apps">
-        <div class="slds-p-horizontal_medium slds-p-bottom_medium">
+        <div class="toolbar slds-p-horizontal_medium slds-p-bottom_small">
             <lightning-input
                 type="search"
-                label="Search objects"
+                label="Search accessible objects"
                 value={searchTerm}
                 onchange={handleSearch}
-                class="slds-m-bottom_small">
+                class="search-input">
             </lightning-input>
+            <div class="toolbar-note">{canvasObjectCount} objects on canvas</div>
+        </div>
 
-            <template if:true={errorMessage}>
-                <div class="slds-text-color_error slds-m-bottom_small" role="alert">{errorMessage}</div>
-            </template>
+        <template if:true={errorMessage}>
+            <div class="slds-text-color_error slds-p-horizontal_medium slds-p-bottom_small" role="alert">
+                {errorMessage}
+            </div>
+        </template>
 
-            <div class="browser-layout">
-                <section class="object-list" aria-label="Accessible objects">
+        <div class="workspace">
+            <aside class="object-explorer" aria-label="Accessible objects">
+                <div class="panel-heading">
+                    <h2>Objects</h2>
                     <template if:true={isLoadingObjects}>
                         <lightning-spinner alternative-text="Loading objects" size="small"></lightning-spinner>
                     </template>
-                    <template for:each={filteredObjects} for:item="item">
-                        <button
-                            key={item.apiName}
-                            class={item.buttonClass}
-                            data-name={item.apiName}
-                            onclick={handleSelectObject}>
-                            <span class="object-label">{item.label}</span>
-                            <span class="object-api">{item.apiName}</span>
-                        </button>
-                    </template>
-                </section>
-
-                <section class="field-panel" aria-label="Readable fields">
-                    <template if:true={selectedObject}>
-                        <div class="slds-m-bottom_small">
-                            <h2 class="slds-text-heading_medium">{selectedObject.label}</h2>
-                            <p class="slds-text-color_weak">{selectedObject.apiName}</p>
+                </div>
+                <template for:each={filteredObjects} for:item="item">
+                    <div key={item.apiName} class="object-option">
+                        <div class="object-option-text">
+                            <span class="object-option-label">{item.label}</span>
+                            <span class="object-option-api">{item.apiName}</span>
                         </div>
-                        <template if:true={isLoadingFields}>
-                            <lightning-spinner alternative-text="Loading fields" size="small"></lightning-spinner>
+                        <lightning-button-icon
+                            icon-name={item.addIcon}
+                            alternative-text={item.addLabel}
+                            title={item.addLabel}
+                            variant="border-filled"
+                            data-name={item.apiName}
+                            onclick={handleToggleObject}
+                            disabled={item.isLoading}>
+                        </lightning-button-icon>
+                    </div>
+                </template>
+                <template if:false={hasFilteredObjects}>
+                    <p class="empty-note">No accessible objects match this search.</p>
+                </template>
+            </aside>
+
+            <main class="canvas-scroll" aria-label="Schema canvas">
+                <template if:true={hasCanvasObjects}>
+                    <div class="canvas-content" style={canvasStyle}>
+                        <svg class="relationship-layer" aria-hidden="true">
+                            <defs>
+                                <marker id="relationshipArrow" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+                                    <path d="M0,0 L0,6 L7,3 z" class="arrow-head"></path>
+                                </marker>
+                            </defs>
+                            <template for:each={relationshipLines} for:item="line">
+                                <path
+                                    key={line.key}
+                                    d={line.path}
+                                    class="relationship-line"
+                                    marker-end="url(#relationshipArrow)">
+                                </path>
+                            </template>
+                        </svg>
+
+                        <template for:each={canvasObjects} for:item="item">
+                            <article
+                                key={item.apiName}
+                                class="schema-card"
+                                style={item.cardStyle}
+                                data-object={item.apiName}>
+                                <header class="schema-card-header">
+                                    <lightning-button-icon
+                                        icon-name="utility:drag_and_drop"
+                                        alternative-text="Move object card"
+                                        title="Drag to move"
+                                        variant="bare-inverse"
+                                        data-name={item.apiName}
+                                        onpointerdown={handleDragStart}>
+                                    </lightning-button-icon>
+                                    <div class="schema-card-title">
+                                        <h3>{item.label}</h3>
+                                        <span>{item.apiName}</span>
+                                    </div>
+                                    <lightning-button-icon
+                                        icon-name="utility:close"
+                                        alternative-text="Remove from canvas"
+                                        title="Remove from canvas"
+                                        variant="bare-inverse"
+                                        data-name={item.apiName}
+                                        onclick={handleRemoveObject}>
+                                    </lightning-button-icon>
+                                </header>
+                                <template if:true={item.isLoading}>
+                                    <div class="card-loading">
+                                        <lightning-spinner alternative-text="Loading fields" size="small"></lightning-spinner>
+                                    </div>
+                                </template>
+                                <template if:false={item.isLoading}>
+                                    <div class="field-list">
+                                        <template for:each={item.fields} for:item="field">
+                                            <button
+                                                key={field.apiName}
+                                                class={field.rowClass}
+                                                data-object={item.apiName}
+                                                data-field={field.apiName}
+                                                onclick={handleSelectField}>
+                                                <span class="field-main">
+                                                    <span class="field-label">{field.label}</span>
+                                                    <span class="field-api">{field.apiName}</span>
+                                                    <template if:true={field.required}>
+                                                        <span class="required-mark" title="Required field">*</span>
+                                                    </template>
+                                                </span>
+                                                <span class="field-type">{field.dataType}</span>
+                                                <template if:true={field.relationshipSummary}>
+                                                    <span class="field-relationship">↗ {field.relationshipSummary}</span>
+                                                </template>
+                                            </button>
+                                        </template>
+                                        <template if:false={item.fields.length}>
+                                            <p class="empty-note card-empty">No readable fields.</p>
+                                        </template>
+                                    </div>
+                                </template>
+                            </article>
                         </template>
-                        <lightning-datatable
-                            key-field="apiName"
-                            data={fields}
-                            columns={columns}
-                            hide-checkbox-column>
-                        </lightning-datatable>
-                    </template>
-                    <template if:false={selectedObject}>
-                        <div class="empty-state">Select an object to inspect its readable fields.</div>
-                    </template>
-                </section>
-            </div>
+                    </div>
+                </template>
+                <template if:false={hasCanvasObjects}>
+                    <div class="canvas-empty">
+                        <lightning-icon icon-name="utility:connected_apps" size="large"></lightning-icon>
+                        <h2>Build your schema view</h2>
+                        <p>Add objects from the list. Only objects and fields you can read are available.</p>
+                    </div>
+                </template>
+            </main>
+
+            <aside class="detail-panel" aria-label="Selected field details">
+                <div class="panel-heading">
+                    <h2>Details</h2>
+                </div>
+                <template if:true={selectedField}>
+                    <dl class="detail-list">
+                        <dt>Object</dt>
+                        <dd>{selectedField.objectLabel} <span>{selectedField.objectApiName}</span></dd>
+                        <dt>Field</dt>
+                        <dd>{selectedField.label} <span>{selectedField.apiName}</span></dd>
+                        <dt>Data type</dt>
+                        <dd>{selectedField.dataType}</dd>
+                        <dt>Required</dt>
+                        <dd>{selectedField.requiredLabel}</dd>
+                        <dt>Calculated</dt>
+                        <dd>{selectedField.calculatedLabel}</dd>
+                        <template if:true={selectedField.relationshipName}>
+                            <dt>Relationship name</dt>
+                            <dd>{selectedField.relationshipName}</dd>
+                        </template>
+                        <template if:true={selectedField.referenceSummary}>
+                            <dt>Related objects</dt>
+                            <dd>{selectedField.referenceSummary}</dd>
+                        </template>
+                    </dl>
+                </template>
+                <template if:false={selectedField}>
+                    <p class="empty-note">Select a field on a card to see its details.</p>
+                </template>
+                <div class="legend">
+                    <h3>Canvas</h3>
+                    <p><span class="legend-star">*</span> Required field</p>
+                    <p><span class="legend-line"></span> Readable relationship to an object on canvas</p>
+                    <p>Drag cards to arrange your view. Removing a card only changes this view.</p>
+                </div>
+            </aside>
         </div>
     </lightning-card>
 </template>

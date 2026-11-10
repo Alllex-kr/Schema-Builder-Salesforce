@@ -24,7 +24,7 @@ public with sharing class SchemaBrowserController {
 
         for (String apiName : globalDescribe.keySet()) {
             Schema.DescribeSObjectResult objectDescribe = globalDescribe.get(apiName).getDescribe();
-            if (!objectDescribe.isAccessible() || !objectDescribe.isQueryable()) {
+            if (!objectDescribe.isAccessible()) {
                 continue;
             }
 
@@ -53,7 +53,7 @@ public with sharing class SchemaBrowserController {
         }
 
         Schema.DescribeSObjectResult objectDescribe = objectType.getDescribe();
-        if (!objectDescribe.isAccessible() || !objectDescribe.isQueryable()) {
+        if (!objectDescribe.isAccessible()) {
             throw new AuraHandledException('You do not have read access to this object.');
         }
 
@@ -77,7 +77,7 @@ public with sharing class SchemaBrowserController {
             if (fieldDescribe.getType() == Schema.DisplayType.REFERENCE) {
                 for (Schema.SObjectType targetType : fieldDescribe.getReferenceTo()) {
                     Schema.DescribeSObjectResult targetDescribe = targetType.getDescribe();
-                    if (targetDescribe.isAccessible() && targetDescribe.isQueryable()) {
+                    if (targetDescribe.isAccessible()) {
                         item.referenceTo.add(targetDescribe.getName());
                     }
                 }

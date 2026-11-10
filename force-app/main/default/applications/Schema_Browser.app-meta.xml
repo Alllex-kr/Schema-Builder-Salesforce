@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomApplication xmlns="http://soap.sforce.com/2006/04/metadata">
+    <label>Schema Browser</label>
+    <navType>Standard</navType>
+    <tabs>
+        <tab>standard-home</tab>
+        <tab>Schema_Browser</tab>
+    </tabs>
+    <uiType>Lightning</uiType>
+</CustomApplication>

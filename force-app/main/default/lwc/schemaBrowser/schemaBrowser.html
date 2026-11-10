@@ -1,0 +1,56 @@
+<template>
+    <lightning-card title="Schema Browser" icon-name="standard:connected_apps">
+        <div class="slds-p-horizontal_medium slds-p-bottom_medium">
+            <lightning-input
+                type="search"
+                label="Search objects"
+                value={searchTerm}
+                onchange={handleSearch}
+                class="slds-m-bottom_small">
+            </lightning-input>
+
+            <template if:true={errorMessage}>
+                <div class="slds-text-color_error slds-m-bottom_small" role="alert">{errorMessage}</div>
+            </template>
+
+            <div class="browser-layout">
+                <section class="object-list" aria-label="Accessible objects">
+                    <template if:true={isLoadingObjects}>
+                        <lightning-spinner alternative-text="Loading objects" size="small"></lightning-spinner>
+                    </template>
+                    <template for:each={filteredObjects} for:item="item">
+                        <button
+                            key={item.apiName}
+                            class={item.buttonClass}
+                            data-name={item.apiName}
+                            onclick={handleSelectObject}>
+                            <span class="object-label">{item.label}</span>
+                            <span class="object-api">{item.apiName}</span>
+                        </button>
+                    </template>
+                </section>
+
+                <section class="field-panel" aria-label="Readable fields">
+                    <template if:true={selectedObject}>
+                        <div class="slds-m-bottom_small">
+                            <h2 class="slds-text-heading_medium">{selectedObject.label}</h2>
+                            <p class="slds-text-color_weak">{selectedObject.apiName}</p>
+                        </div>
+                        <template if:true={isLoadingFields}>
+                            <lightning-spinner alternative-text="Loading fields" size="small"></lightning-spinner>
+                        </template>
+                        <lightning-datatable
+                            key-field="apiName"
+                            data={fields}
+                            columns={columns}
+                            hide-checkbox-column>
+                        </lightning-datatable>
+                    </template>
+                    <template if:false={selectedObject}>
+                        <div class="empty-state">Select an object to inspect its readable fields.</div>
+                    </template>
+                </section>
+            </div>
+        </div>
+    </lightning-card>
+</template>

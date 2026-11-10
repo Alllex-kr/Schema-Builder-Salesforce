@@ -8,6 +8,11 @@ const ROW_GAP = 550;
 const CANVAS_PADDING = 30;
 const DEFAULT_CANVAS_WIDTH = 1180;
 const DEFAULT_CANVAS_HEIGHT = 640;
+const OBJECT_TYPE_OPTIONS = [
+    { label: 'All objects', value: 'all' },
+    { label: 'Standard objects', value: 'standard' },
+    { label: 'Custom objects', value: 'custom' }
+];
 
 export default class SchemaBrowser extends LightningElement {
     objects = [];
@@ -15,6 +20,8 @@ export default class SchemaBrowser extends LightningElement {
     relationshipLines = [];
     selectedField;
     searchTerm = '';
+    objectTypeFilter = 'all';
+    objectTypeOptions = OBJECT_TYPE_OPTIONS;
     isLoadingObjects = true;
     errorMessage;
     dragState;
@@ -46,6 +53,8 @@ export default class SchemaBrowser extends LightningElement {
         const term = (this.searchTerm || '').trim().toLowerCase();
         return this.objects
             .filter((item) => !term || item.label.toLowerCase().includes(term) || item.apiName.toLowerCase().includes(term))
+            .filter((item) => this.objectTypeFilter === 'all' ||
+                (this.objectTypeFilter === 'custom' ? item.custom : !item.custom))
             .map((item) => {
                 const canvasItem = this.canvasObjects.find((entry) => entry.apiName === item.apiName);
                 return {
@@ -69,6 +78,10 @@ export default class SchemaBrowser extends LightningElement {
         return this.canvasObjects.length;
     }
 
+    get disableCanvasActions() {
+        return this.canvasObjects.length === 0;
+    }
+
     get canvasStyle() {
         const maxX = this.canvasObjects.reduce((value, item) => Math.max(value, item.x + CARD_WIDTH), 0);
         const maxY = this.canvasObjects.reduce((value, item) => Math.max(value, item.y + 520), 0);
@@ -89,6 +102,26 @@ export default class SchemaBrowser extends LightningElement {
 
     handleSearch(event) {
         this.searchTerm = event.target.value;
+    }
+
+    handleObjectTypeFilter(event) {
+        this.objectTypeFilter = event.detail.value;
+    }
+
+    handleAutoArrange() {
+        this.canvasObjects = this.canvasObjects.map((item, index) => {
+            const column = index % 3;
+            const row = Math.floor(index / 3);
+            const x = CANVAS_PADDING + column * (CARD_WIDTH + COLUMN_GAP);
+            const y = CANVAS_PADDING + row * ROW_GAP;
+            return { ...item, x, y, cardStyle: this.getCardStyle(x, y) };
+        });
+    }
+
+    handleClearCanvas() {
+        this.canvasObjects = [];
+        this.selectedField = undefined;
+        this.errorMessage = undefined;
     }
 
     async handleToggleObject(event) {
